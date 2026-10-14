@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- Aperçu du popup hors extension : charge ../popup.html avec un faux chrome.storage. -->
+<meta charset="utf-8">
+<script>
+  fetch('../popup.html').then((r) => r.text()).then((html) => {
+    const stub = '<script>' +
+      'const d = { actif: true, mode: "remplacer", decimales: 2 };' +
+      'window.chrome = { storage: { sync: { get: async (x) => ({ ...x, ...d }), set: async (o) => Object.assign(d, o) } },' +
+      ' runtime: { openOptionsPage() {} } };' +
+      '<\/script>';
+    html = html
+      .replace(/(href|src)="(?!#|http)/g, '$1="../')
+      .replace('<head>', '<head>' + stub);
+    document.open();
+    document.write(html);
+    document.close();
+  });
+</script>

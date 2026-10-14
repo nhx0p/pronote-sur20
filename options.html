@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pronote sur 20 — Options</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body { width: auto; max-width: 600px; margin: 40px auto; padding: 0 16px; font-size: 14px; }
+    .carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 14px; padding: 20px; }
+    .entete { margin-bottom: 18px; }
+    h1 { font-size: 18px; }
+    .aide { color: var(--texte-2); margin: 0 0 14px; }
+    code { background: var(--carte-2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 10px 12px;
+      background: var(--fond);
+      color: var(--texte);
+      border: 1px solid var(--bord);
+      border-radius: 10px;
+      font: 13px/1.5 ui-monospace, Consolas, monospace;
+      resize: vertical;
+    }
+    textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+    .actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    button {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 9px;
+      background: var(--accent);
+      color: var(--accent-texte);
+      font: 600 13px system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.08); }
+    #statut { margin-top: 14px; font-size: 13px; white-space: pre-line; color: var(--texte-2); }
+    #statut:empty { display: none; }
+  </style>
+</head>
+<body>
+  <div class="carte">
+    <header class="entete">
+      <img class="logo" src="icons/icon48.png" alt="" width="36" height="36">
+      <div class="titres">
+        <h1>Pronote via un ENT</h1>
+        <p class="statut">Adresses supplémentaires</p>
+      </div>
+    </header>
+    <p class="aide">
+      L'extension agit déjà sur <code>*.index-education.net/pronote/</code>.
+      Si votre Pronote s'ouvre sous une autre adresse (ENT, serveur du lycée),
+      ajoutez-la ici, une par ligne, par exemple <code>https://ent.monlycee.fr</code>.
+      Le navigateur demandera votre autorisation pour chaque site.
+    </p>
+    <textarea id="adresses" spellcheck="false" placeholder="https://ent.monlycee.fr"></textarea>
+    <div class="actions">
+      <button id="enregistrer" type="button">Enregistrer</button>
+    </div>
+    <div id="statut" role="status"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

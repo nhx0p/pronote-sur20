@@ -1,0 +1,27 @@
+/* Pronote sur 20 — styles injectés dans Pronote. Tout est préfixé « sur20- ». */
+
+/* Badge discret à côté de la note */
+.sur20-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #e6f4ea;
+  color: #137333;
+  font: 600 11px/1.6 system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-decoration: none;
+  font-style: normal;
+}
+
+/* Mode « remplacer » : la note /20 garde exactement le style de la note Pronote */
+.sur20-valeur {
+  font: inherit;
+  color: inherit;
+}
+
+/* Barème « /10 » d'une note coupée en deux balises, masqué en mode « remplacer » */
+.sur20-bareme.sur20-masque {
+  display: none !important;
+}

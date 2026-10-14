@@ -1,0 +1,14 @@
+# Paquets et clés de signature de l'extension
+*.zip
+*.xpi
+*.crx
+*.pem
+web-ext-artifacts/
+
+# Fichiers système / éditeur
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+node_modules/

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Page de test Pronote sur 20</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 20px; background: #fff; color: #222; }
+    .matiere { font-weight: bold; margin-top: 14px; }
+    .ligne { display: flex; gap: 16px; padding: 4px 0; border-bottom: 1px solid #eee; }
+    .note { min-width: 80px; font-weight: 600; }
+    .controles { margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  </style>
+  <!-- Simulation minimale de chrome.storage pour tester hors extension -->
+  <script>
+    (function () {
+      const ecouteurs = [];
+      const donnees = { actif: true, mode: 'remplacer', decimales: 2 };
+      window.chrome = {
+        storage: {
+          sync: {
+            get: async (defauts) => ({ ...defauts, ...donnees }),
+            set: async (obj) => {
+              const ch = {};
+              for (const k in obj) { ch[k] = { oldValue: donnees[k], newValue: obj[k] }; donnees[k] = obj[k]; }
+              ecouteurs.forEach((f) => f(ch, 'sync'));
+            }
+          },
+          onChanged: { addListener: (f) => ecouteurs.push(f) }
+        }
+      };
+    })();
+  </script>
+</head>
+<body>
+  <div class="controles">
+    <button onclick="chrome.storage.sync.set({ mode: 'remplacer' })">Mode remplacer</button>
+    <button onclick="chrome.storage.sync.set({ mode: 'cote' })">Mode à côté</button>
+    <button onclick="chrome.storage.sync.set({ decimales: 1 })">1 décimale</button>
+    <button onclick="chrome.storage.sync.set({ decimales: 2 })">2 décimales</button>
+    <button onclick="chrome.storage.sync.set({ actif: false })">Désactiver</button>
+    <button onclick="chrome.storage.sync.set({ actif: true })">Activer</button>
+    <button id="ajout">Ajouter une note dynamiquement</button>
+  </div>
+
+  <div id="liste">
+    <div class="matiere">MATHEMATIQUES</div>
+    <div class="ligne"><span class="note" id="t1">7/10</span><span>Contrôle — Coef. 2</span></div>
+    <div class="ligne"><span class="note" id="t2">9/12</span><span>Devoir maison</span></div>
+    <div class="ligne"><span class="note" id="t3">3,5<sup>/5</sup></span><span>Interrogation (note éclatée en 2 balises)</span></div>
+
+    <div class="matiere">ANGLAIS</div>
+    <div class="ligne"><span class="note" id="p1">5,25/10</span><span>Format Pronote</span></div>
+    <div class="ligne"><span class="note" id="p2">9,00/10</span><span>Format Pronote</span></div>
+    <div class="ligne"><span class="note" id="p3">8,50/10</span><span>Format Pronote</span></div>
+    <div class="ligne"><span class="note" id="p4">8,00</span><span>Déjà sur 20 (sans /20)</span></div>
+
+    <div class="matiere">MOYENNES DE CLASSE</div>
+    <div class="ligne"><span class="note">5,25/10</span><span id="m1">Moyenne classe : <span>6,93</span><span>/10</span></span></div>
+    <div class="ligne"><span class="note">9,00/10</span><span id="m2"><span>Moyenne classe : 8,11</span><span>/10</span></span></div>
+    <div class="ligne"><span class="note">8,50/10</span><span id="m3">Moyenne classe : 8,17/10</span></div>
+    <div class="ligne"><span class="note">8,00</span><span id="m4">Moyenne classe : 5,39</span></div>
+    <div class="ligne"><span class="note">16,00/18</span><span id="m5">Moyenne classe : <span>14,92</span> <span>/18</span></span></div>
+    <div class="ligne"><span class="note">3,50/10</span><span id="m6">Moyenne groupe : 3,72<span>/10</span></span></div>
+
+    <div class="matiere">PHYSIQUE-CHIMIE</div>
+    <div class="ligne"><span class="note" id="t4">32/40</span><span>TP</span></div>
+    <div class="ligne"><span class="note" id="t5">18/20</span><span>Évaluation (déjà sur 20)</span></div>
+    <div class="ligne"><span class="note" id="t6">Abs</span><span>Absent</span></div>
+    <div class="ligne"><span id="t7">Note : 9,5/12 obtenue</span><span>Note dans un texte</span></div>
+    <div class="ligne"><span id="t8">Rendu le 06/10/2026</span><span>Date (ne doit pas bouger)</span></div>
+  </div>
+
+  <script src="../core.js"></script>
+  <script src="../content.js"></script>
+  <script>
+    document.getElementById('ajout').addEventListener('click', () => {
+      const d = document.createElement('div');
+      d.className = 'ligne';
+      d.innerHTML = '<span class="note">4/5</span><span>Note ajoutée dynamiquement</span>';
+      document.getElementById('liste').append(d);
+    });
+  </script>
+</body>
+</html>
