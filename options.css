@@ -1,0 +1,44 @@
+/* Page Sites — mise en page. Couleurs et contrôles : ui.css. */
+body {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 56px 24px;
+  font-size: 14px;
+}
+
+h1 { font-size: 20px; font-weight: 600; }
+.intro { margin-top: 6px; color: var(--texte-2); }
+
+/* Ajout d'un site */
+.ajout { display: flex; gap: 8px; margin-top: 24px; }
+.champ {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-petit);
+  background: var(--fond);
+  color: var(--texte);
+  font: 14px var(--police);
+}
+.champ::placeholder { color: var(--texte-2); opacity: .75; }
+.champ[aria-invalid="true"] { border-color: var(--erreur); outline-color: var(--erreur); }
+.ajout .bouton { min-height: 36px; }
+.message { margin-top: 8px; color: var(--erreur); font-size: 13px; }
+
+/* Liste des sites */
+.sites { margin-top: 24px; border: 1px solid var(--filet); border-radius: var(--rayon); }
+.sites:empty { display: none; }
+.site {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 10px 10px 16px;
+}
+.site + .site { border-top: 1px solid var(--filet); }
+.site-infos { flex: 1 1 180px; min-width: 0; }
+.site-nom { display: block; font-weight: 500; overflow-wrap: anywhere; }
+.site-etat { display: flex; align-items: center; gap: 7px; color: var(--texte-2); font-size: 13px; }
+.site-actions { display: flex; gap: 4px; }

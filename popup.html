@@ -3,56 +3,44 @@
 <head>
   <meta charset="utf-8">
   <title>Pronote sur 20</title>
+  <link rel="stylesheet" href="ui.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header class="entete">
-    <img class="logo" src="icons/icon48.png" alt="" width="36" height="36">
-    <div class="titres">
-      <h1>Pronote sur 20</h1>
-      <p id="statut" class="statut">Activée</p>
-    </div>
-    <label class="interrupteur" title="Activer / désactiver">
-      <input type="checkbox" id="actif" role="switch">
-      <span class="piste"><span class="curseur"></span></span>
+  <header class="tete">
+    <h1>Pronote sur 20</h1>
+    <label class="inter">
+      <input type="checkbox" id="actif" role="switch" aria-label="Convertir les notes">
+      <span class="inter-piste"></span>
     </label>
   </header>
 
+  <div class="etat" id="etat" role="status">
+    <span class="point"></span>
+    <span class="etat-texte" id="etatTexte"></span>
+    <button class="bouton bouton-petit" id="etatAction" type="button" hidden></button>
+  </div>
+
   <main id="reglages">
-    <!-- Aperçu en direct du rendu dans Pronote -->
-    <section class="apercu" aria-label="Aperçu">
-      <div class="apercu-ligne">
-        <div>
-          <div class="apercu-titre">Contrôle de maths</div>
-          <div class="apercu-sous">Moyenne classe : <span id="apercuMoyenne"></span></div>
-        </div>
-        <div class="apercu-note" id="apercuNote"></div>
+    <div class="ligne">
+      <span id="libMode">Note sur 20</span>
+      <div class="segments" role="radiogroup" aria-labelledby="libMode">
+        <label><input type="radio" name="mode" value="remplacer"><span>Remplace</span></label>
+        <label><input type="radio" name="mode" value="cote"><span>À côté</span></label>
       </div>
-    </section>
+    </div>
 
-    <section class="bloc">
-      <h2>Affichage</h2>
-      <div class="segments" role="radiogroup" aria-label="Affichage">
-        <label><input type="radio" name="mode" value="remplacer"><span>Remplacer la note</span></label>
-        <label><input type="radio" name="mode" value="cote"><span>À côté de la note</span></label>
+    <div class="ligne">
+      <span id="libDecimales">Décimales</span>
+      <div class="segments" role="radiogroup" aria-labelledby="libDecimales">
+        <label><input type="radio" name="decimales" value="1"><span>1</span></label>
+        <label><input type="radio" name="decimales" value="2"><span>2</span></label>
       </div>
-    </section>
-
-    <section class="bloc">
-      <h2>Décimales</h2>
-      <div class="segments" role="radiogroup" aria-label="Décimales">
-        <label><input type="radio" name="decimales" value="1"><span>1 &nbsp;·&nbsp; 14,5</span></label>
-        <label><input type="radio" name="decimales" value="2"><span>2 &nbsp;·&nbsp; 14,50</span></label>
-      </div>
-    </section>
+    </div>
   </main>
 
   <footer class="pied">
-    <a href="#" id="lienOptions">Pronote via un ENT ?</a>
-    <span class="prive">
-      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1Zm2 5H6V4.5a2 2 0 1 1 4 0V6Z"/></svg>
-      Rien n'est envoyé
-    </span>
+    <button class="lien" id="lienOptions" type="button">Sites et ENT</button>
   </footer>
 
   <script src="core.js"></script>

@@ -2,20 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Page de test Pronote sur 20</title>
   <link rel="stylesheet" href="../styles.css">
   <style>
-    body { font: 14px system-ui, sans-serif; margin: 20px; background: #fff; color: #222; }
-    .matiere { font-weight: bold; margin-top: 14px; }
-    .ligne { display: flex; gap: 16px; padding: 4px 0; border-bottom: 1px solid #eee; }
-    .note { min-width: 80px; font-weight: 600; }
-    .controles { margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    :root { --fond: #fff; --texte: #1f2623; --texte-2: #66706b; --filet: #e4e8e6; --bouton: #f3f5f4; }
+    :root.sombre { --fond: #1d2422; --texte: #e8eeeb; --texte-2: #9aa6a0; --filet: #313a37; --bouton: #29312e; }
+    body { max-width: 760px; margin: 0 auto; padding: 24px 20px 48px; background: var(--fond); color: var(--texte); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+    .controles { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--filet); }
+    .controles button { padding: 5px 10px; border: 1px solid var(--filet); border-radius: 6px; background: var(--bouton); color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+    .matiere { margin: 22px 0 4px; font-size: 13px; font-weight: 600; }
+    .ligne { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 7px 0; border-bottom: 1px solid var(--filet); }
+    .ligne > :last-child:not([id]) { color: var(--texte-2); }
+    .note { font-weight: 600; }
   </style>
   <!-- Simulation minimale de chrome.storage pour tester hors extension -->
   <script>
     (function () {
       const ecouteurs = [];
-      const donnees = { actif: true, mode: 'remplacer', decimales: 2 };
+      const donnees = {};
       window.chrome = {
         storage: {
           sync: {
@@ -34,13 +39,14 @@
 </head>
 <body>
   <div class="controles">
-    <button onclick="chrome.storage.sync.set({ mode: 'remplacer' })">Mode remplacer</button>
-    <button onclick="chrome.storage.sync.set({ mode: 'cote' })">Mode à côté</button>
+    <button onclick="chrome.storage.sync.set({ mode: 'remplacer' })">Remplacer</button>
+    <button onclick="chrome.storage.sync.set({ mode: 'cote' })">À côté</button>
     <button onclick="chrome.storage.sync.set({ decimales: 1 })">1 décimale</button>
     <button onclick="chrome.storage.sync.set({ decimales: 2 })">2 décimales</button>
-    <button onclick="chrome.storage.sync.set({ actif: false })">Désactiver</button>
-    <button onclick="chrome.storage.sync.set({ actif: true })">Activer</button>
-    <button id="ajout">Ajouter une note dynamiquement</button>
+    <button onclick="chrome.storage.sync.set({ actif: false })">Pause</button>
+    <button onclick="chrome.storage.sync.set({ actif: true })">Reprendre</button>
+    <button id="ajout">Ajouter une note</button>
+    <button onclick="document.documentElement.classList.toggle('sombre')">Clair / sombre</button>
   </div>
 
   <div id="liste">
@@ -68,7 +74,11 @@
     <div class="ligne"><span class="note" id="t5">18/20</span><span>Évaluation (déjà sur 20)</span></div>
     <div class="ligne"><span class="note" id="t6">Abs</span><span>Absent</span></div>
     <div class="ligne"><span id="t7">Note : 9,5/12 obtenue</span><span>Note dans un texte</span></div>
-    <div class="ligne"><span id="t8">Rendu le 06/10/2026</span><span>Date (ne doit pas bouger)</span></div>
+
+    <div class="matiere">NE DOIT PAS BOUGER</div>
+    <div class="ligne"><span id="t8">Rendu le 06/10/2026</span><span>Date</span></div>
+    <div class="ligne"><span id="n1">Groupe 1/2</span><span>Numérotation</span></div>
+    <div class="ligne"><span id="n2">DM de maths (1/2)</span><span>Numérotation</span></div>
   </div>
 
   <script src="../core.js"></script>

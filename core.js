@@ -5,6 +5,13 @@
 (function (racine) {
   'use strict';
 
+  // Réglages par défaut, communs au script de contenu et au popup.
+  const REGLAGES_DEFAUT = Object.freeze({
+    actif: true,
+    mode: 'remplacer',     // 'remplacer' = la note /20 prend la place de la note, 'cote' = badge à côté
+    decimales: 2           // 1 ou 2
+  });
+
   // Mentions sans valeur numérique : jamais converties.
   const RE_MENTION = /^(abs\.?|absent(e)?|disp\.?|dispens[ée](e)?|nnot|non\s*not[ée]|inap\.?|inapte|n\.?\s*rdu|non\s*rendu|fraude?)$/i;
 
@@ -18,6 +25,17 @@
   // Au-delà de cette longueur, un texte n'est pas une cellule de note : on l'ignore
   // (limite les faux positifs dans les paragraphes, les commentaires du professeur…).
   const LONGUEUR_MAX_TEXTE = 60;
+
+  // Mot suivi d'une numérotation, pas d'une note : « Groupe 1/2 », « Exercice n° 3/4 ».
+  const RE_NUMEROTATION = /(?<!\p{L})(?:groupes?|gr|exercices?|exos?|ex|pages?|p|parties?|chapitres?|chap|s[ée]ances?|s[ée]quences?|semaines?|sem|fiches?|feuilles?|activit[ée]s?|questions?|[ée]tapes?|cours|tome|niveau)\.?\s*(?:n°\s*)?\(?\s*$/iu;
+
+  // Texte qui annonce clairement une note.
+  const RE_CONTEXTE_NOTE = /note|moy/i;
+
+  // avant = texte qui précède le nombre. Une numérotation n'a jamais de décimales.
+  function estNumerotation(avant, numBrut) {
+    return /^\d+$/.test(numBrut) && RE_NUMEROTATION.test(avant) && !/moy/i.test(avant);
+  }
 
   // « 9,5 » → 9.5
   function versNombre(brut) {
@@ -63,7 +81,11 @@
     const resultats = [];
     for (const m of t.matchAll(RE_NOTE_GLOBALE)) {
       const note = analyser(m[1], m[2]);
-      if (note) resultats.push({ index: m.index, brut: m[0], note });
+      if (!note || estNumerotation(t.slice(0, m.index), m[1])) continue;
+      // « DM de maths (1/2) » : un petit entier sur un petit entier, au milieu d'un texte,
+      // est une numérotation, sauf si le texte parle d'une note.
+      if (note.bareme < 5 && Number.isInteger(note.note) && !RE_CONTEXTE_NOTE.test(t)) continue;
+      resultats.push({ index: m.index, brut: m[0], note });
     }
     return resultats;
   }
@@ -80,7 +102,7 @@
     if (String(avant).trim().length > LONGUEUR_MAX_TEXTE) return null;
     const mA = RE_FIN_NOMBRE.exec(String(avant));
     const mB = RE_DEBUT_BAREME.exec(String(apres));
-    if (!mA || !mB) return null;
+    if (!mA || !mB || estNumerotation(String(avant).slice(0, mA.index), mA[1])) return null;
     const note = analyser(mA[1], mB[2]);
     if (!note) return null;
     return {
@@ -111,9 +133,42 @@
     return arrondi.toFixed(decimales).replace('.', ',');
   }
 
+  /*
+   * Adresse saisie → motif d'hôte pour les permissions.
+   * « https://ent.monlycee.fr/xyz » ou « ent.monlycee.fr » → « *://ent.monlycee.fr/* ».
+   * Renvoie null si l'adresse n'est pas celle d'un site web.
+   */
+  const RE_HOTE = /^(?:[a-z0-9-]+\.)+[a-z0-9-]+$|^localhost$/i;
+
+  function versMotif(saisie) {
+    let texte = String(saisie).trim();
+    if (!texte) return null;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(texte)) texte = 'https://' + texte;
+    try {
+      const url = new URL(texte);
+      if (!/^https?:$/.test(url.protocol) || !RE_HOTE.test(url.hostname)) return null;
+      return '*://' + url.hostname + '/*';
+    } catch {
+      return null;
+    }
+  }
+
+  // « *://ent.monlycee.fr/* » → « ent.monlycee.fr »
+  function hoteDuMotif(motif) {
+    return String(motif).replace(/^.*?:\/\//, '').replace(/\/.*$/, '');
+  }
+
+  // Page Pronote hébergée par Index Éducation (prise en charge d'office par le manifeste).
+  function estPronote(url) {
+    return /^https?:\/\/(?:[^/]+\.)?index-education\.net\/pronote\//i.test(String(url));
+  }
+
   const api = {
+    REGLAGES_DEFAUT,
+    versMotif,
+    hoteDuMotif,
+    estPronote,
     estMention,
-    analyser,
     analyserNoteComplete,
     trouverNotes,
     analyserNoteCoupee,

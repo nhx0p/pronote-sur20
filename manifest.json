@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Pronote sur 20",
-  "version": "1.0.0",
-  "description": "Convertit automatiquement les notes Pronote sur 20 et estime les moyennes. Aucune donnée envoyée.",
+  "version": "1.1.1",
+  "description": "Affiche toutes les notes Pronote sur 20, quel que soit leur barème. Aucune donnée envoyée.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "scripting"],
+  "minimum_chrome_version": "111",
+  "permissions": ["activeTab", "storage", "scripting"],
   "optional_host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js",

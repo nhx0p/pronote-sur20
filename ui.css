@@ -1,0 +1,181 @@
+/*
+ * Base commune au popup et à la page Sites : couleurs, typographie, contrôles.
+ * Neutres légèrement teintés de vert ; l'accent ne sert qu'à dire « actif ».
+ */
+:root {
+  color-scheme: light dark;
+
+  --fond: #ffffff;
+  --creux: #f3f5f4;
+  --releve: #ffffff;
+  --filet: #e2e6e4;
+  --filet-fort: #c7cecb;
+  --texte: #161a18;
+  --texte-2: #59625d;
+  --accent: #0e6a4a;
+  --alerte: #8f5600;
+  --erreur: #b02a20;
+  --piste: #b4bcb8;
+
+  --police: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --rayon: 8px;
+  --rayon-petit: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #191c1b;
+    --creux: #121514;
+    --releve: #2a2f2d;
+    --filet: #2b302e;
+    --filet-fort: #454d49;
+    --texte: #ecefed;
+    --texte-2: #9ba5a0;
+    --accent: #46a880;
+    --alerte: #dca548;
+    --erreur: #ee8a80;
+    --piste: #525b57;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 13px/1.45 var(--police);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+
+/* Pas d'animation tant que les réglages ne sont pas chargés */
+body:not(.pret) * { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+/* ---------------------------------------------------------------- */
+/* Boutons                                                           */
+/* ---------------------------------------------------------------- */
+
+.bouton {
+  flex: none;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-petit);
+  background: var(--releve);
+  color: var(--texte);
+  font: 600 13px/1 var(--police);
+  cursor: pointer;
+  transition: border-color .12s, background-color .12s;
+}
+.bouton:hover { border-color: var(--texte-2); }
+.bouton:active { background: var(--creux); }
+
+.bouton-fort {
+  border-color: var(--texte);
+  background: var(--texte);
+  color: var(--fond);
+}
+.bouton-fort:hover { border-color: var(--texte); opacity: .9; }
+.bouton-fort:active { background: var(--texte); opacity: .8; }
+
+.bouton-petit { min-height: 26px; padding: 0 10px; font-size: 12px; }
+
+.bouton-nu {
+  border-color: transparent;
+  background: none;
+  color: var(--texte-2);
+  font-weight: 500;
+}
+.bouton-nu:hover { border-color: transparent; background: var(--creux); color: var(--texte); }
+
+:is(.bouton, .lien, .champ):focus-visible,
+.inter input:focus-visible + .inter-piste,
+.segments input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Interrupteur                                                      */
+/* ---------------------------------------------------------------- */
+
+.inter { position: relative; flex: none; display: block; cursor: pointer; }
+.inter input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+.inter-piste {
+  display: block;
+  width: 34px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 10px;
+  background: var(--piste);
+  transition: background-color .15s;
+}
+.inter-piste::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .2);
+  transition: transform .15s;
+}
+.inter input:checked + .inter-piste { background: var(--accent); }
+.inter input:checked + .inter-piste::before { transform: translateX(14px); }
+
+/* ---------------------------------------------------------------- */
+/* Choix segmenté                                                    */
+/* ---------------------------------------------------------------- */
+
+.segments {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 2px;
+  border-radius: var(--rayon);
+  background: var(--creux);
+  box-shadow: inset 0 0 0 1px var(--filet);
+}
+.segments label { position: relative; cursor: pointer; }
+.segments input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+.segments span {
+  display: block;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--rayon-petit);
+  color: var(--texte-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: color .12s, background-color .12s;
+}
+.segments label:hover span { color: var(--texte); }
+.segments input:checked + span {
+  border-color: var(--filet-fort);
+  background: var(--releve);
+  color: var(--texte);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- */
+/* Point d'état                                                      */
+/* ---------------------------------------------------------------- */
+
+.point {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--piste);
+}
+[data-ton="actif"] > .point { background: var(--accent); }
+[data-ton="alerte"] > .point { background: var(--alerte); }

@@ -1,16 +1,28 @@
 <!doctype html>
-<!-- Aperçu du popup hors extension : charge ../popup.html avec un faux chrome.storage. -->
+<!-- Aperçu du popup hors extension, avec un faux « chrome » (à ouvrir via un serveur local). -->
 <meta charset="utf-8">
 <script>
   fetch('../popup.html').then((r) => r.text()).then((html) => {
-    const stub = '<script>' +
-      'const d = { actif: true, mode: "remplacer", decimales: 2 };' +
-      'window.chrome = { storage: { sync: { get: async (x) => ({ ...x, ...d }), set: async (o) => Object.assign(d, o) } },' +
-      ' runtime: { openOptionsPage() {} } };' +
-      '<\/script>';
+    const faux = () => {
+      const d = {};
+      const evenement = { addListener() {} };
+      window.chrome = {
+        storage: { sync: { get: async (x) => ({ ...x, ...d }), set: async (o) => { Object.assign(d, o); } } },
+        tabs: {
+          query: async () => [{ id: 1 }],
+          connect: () => ({
+            disconnect() {},
+            onDisconnect: evenement,
+            onMessage: { addListener: (f) => setTimeout(f, 50, { cadre: 'a', converties: 12 }) }
+          }),
+          onUpdated: evenement
+        },
+        runtime: { openOptionsPage() {} }
+      };
+    };
     html = html
       .replace(/(href|src)="(?!#|http)/g, '$1="../')
-      .replace('<head>', '<head>' + stub);
+      .replace('<head>', '<head><script>(' + faux + ')()<\/script>');
     document.open();
     document.write(html);
     document.close();

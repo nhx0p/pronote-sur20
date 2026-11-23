@@ -1,156 +1,49 @@
-/* Popup — thème sombre proche de Pronote, thème clair si le système est en clair. */
-:root {
-  --fond: #121614;
-  --carte: #1b211e;
-  --carte-2: #232b27;
-  --bord: #2c3531;
-  --texte: #eef3f0;
-  --texte-2: #9aa8a1;
-  --accent: #5fd3a8;
-  --accent-fond: rgba(95, 211, 168, 0.14);
-  --accent-texte: #0d2b20;
-  --apercu: #0f3b30;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    --fond: #f5f7f6;
-    --carte: #ffffff;
-    --carte-2: #eef2f0;
-    --bord: #dde4e0;
-    --texte: #18201c;
-    --texte-2: #5d6b64;
-    --accent: #138a5e;
-    --accent-fond: rgba(19, 138, 94, 0.12);
-    --accent-texte: #ffffff;
-    --apercu: #e3f3ec;
-  }
-}
+/* Popup — mise en page. Couleurs et contrôles : ui.css. */
+body { width: 300px; }
 
-* { box-sizing: border-box; }
-
-body {
-  width: 320px;
-  margin: 0;
-  padding: 14px;
-  background: var(--fond);
-  color: var(--texte);
-  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-}
-
-/* En-tête */
-.entete {
+.tete {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
 }
-.logo { border-radius: 9px; flex: none; }
-.titres { flex: 1; min-width: 0; }
-h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .1px; }
-.statut { margin: 1px 0 0; font-size: 12px; color: var(--accent); font-weight: 600; }
-.statut.eteint { color: var(--texte-2); }
+.tete h1 { font-size: 14px; font-weight: 600; }
 
-/* Interrupteur */
-.interrupteur { position: relative; flex: none; cursor: pointer; }
-.interrupteur input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.piste {
-  display: block;
-  width: 42px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--carte-2);
-  border: 1px solid var(--bord);
-  transition: background .2s, border-color .2s;
+/* État de l'onglet */
+.etat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 7px 16px;
+  border-block: 1px solid var(--filet);
+  background: var(--creux);
 }
-.curseur {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--texte-2);
-  transition: transform .2s, background .2s;
-}
-.interrupteur input:checked + .piste { background: var(--accent); border-color: var(--accent); }
-.interrupteur input:checked + .piste .curseur { transform: translateX(18px); background: #fff; }
-.interrupteur input:focus-visible + .piste { outline: 2px solid var(--accent); outline-offset: 2px; }
+.etat-texte { flex: 1; min-width: 0; color: var(--texte-2); overflow-wrap: anywhere; line-height: 1.35; }
+.etat[data-ton="actif"] .etat-texte { color: var(--texte); }
 
-/* Réglages grisés quand l'extension est désactivée */
-main { transition: opacity .2s; }
-main.desactive { opacity: .4; pointer-events: none; }
-
-/* Aperçu */
-.apercu {
-  background: var(--apercu);
-  border: 1px solid var(--bord);
-  border-left: 3px solid var(--accent);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 14px;
+/* Réglages, grisés en pause */
+main { padding: 4px 16px; transition: opacity .15s; }
+main[inert] { opacity: .45; }
+.ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
 }
-.apercu-ligne { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.apercu-titre { font-weight: 700; }
-.apercu-sous { color: var(--texte-2); font-size: 12px; margin-top: 2px; white-space: nowrap; }
-.apercu-note { font-weight: 700; font-size: 14px; white-space: nowrap; }
-.badge {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 0 5px;
-  border-radius: 8px;
-  background: #e6f4ea;
-  color: #137333;
-  font-size: 11px;
-  font-weight: 600;
-  vertical-align: middle;
-}
-
-/* Blocs de réglages */
-.bloc { margin-bottom: 12px; }
-h2 {
-  margin: 0 0 6px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  color: var(--texte-2);
-}
-
-/* Boutons segmentés */
-.segments {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  background: var(--carte);
-  border: 1px solid var(--bord);
-  border-radius: 10px;
-}
-.segments label { cursor: pointer; }
-.segments input { position: absolute; opacity: 0; pointer-events: none; }
-.segments span {
-  display: block;
-  padding: 7px 6px;
-  border-radius: 7px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--texte-2);
-  transition: background .15s, color .15s;
-}
-.segments label:hover span { color: var(--texte); }
-.segments input:checked + span { background: var(--accent); color: var(--accent-texte); }
-.segments input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ligne + .ligne { border-top: 1px solid var(--filet); }
+.ligne .segments { width: 156px; }
 
 /* Pied */
-.pied {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--bord);
-  font-size: 12px;
+.pied { padding: 9px 16px 10px; border-top: 1px solid var(--filet); }
+.lien {
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--texte-2);
+  font: 12px/1.4 var(--police);
+  cursor: pointer;
 }
-.pied a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.pied a:hover { text-decoration: underline; }
-.prive { display: inline-flex; align-items: center; gap: 4px; color: var(--texte-2); }
+.lien:hover { color: var(--texte); text-decoration: underline; text-underline-offset: 3px; }

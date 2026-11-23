@@ -13,11 +13,7 @@
 
   const C = globalThis.Sur20Core;
 
-  const REGLAGES_DEFAUT = {
-    actif: true,
-    mode: 'remplacer',     // 'remplacer' = la note /20 prend la place de la note, 'cote' = badge à côté
-    decimales: 2           // 1 ou 2
-  };
+  const { REGLAGES_DEFAUT } = C;
   let reglages = { ...REGLAGES_DEFAUT };
 
   // Marque des éléments déjà traités : empêche de retraiter (et donc de boucler).
@@ -32,6 +28,8 @@
 
   let observateur = null;
   let minuterie = null;
+  let dernierPassage = 0;
+  let intervalle = 0;
 
   /* ------------------------------------------------------------------ */
   /* Badges et marquage                                                  */
@@ -41,7 +39,6 @@
     const badge = document.createElement('span');
     badge.className = 'sur20-badge';
     badge.textContent = C.formater(valeur20, reglages.decimales) + '/20';
-    badge.title = 'Note convertie sur 20 (extension Pronote sur 20)';
     return badge;
   }
 
@@ -66,35 +63,50 @@
    * au même format que les notes Pronote sur 20 (« 10,50 »). Le <span> hérite
    * de la police, de la taille et de la couleur de la note d'origine.
    */
-  function remplacer(el, note, source) {
+  function remplacer(el, note, origine) {
     contenusOriginaux.set(el, [...el.childNodes]);
     const valeur = document.createElement('span');
     valeur.className = 'sur20-valeur';
     valeur.textContent = C.formaterPronote(note.valeur20, reglages.decimales);
-    valeur.title = 'Note d’origine : ' + source;
+    valeur.title = 'Note d’origine : ' + origine;
     el.replaceChildren(valeur);
     el.dataset.sur20Affiche = valeur.textContent;
   }
 
   /*
    * Marque l'élément puis remplace la note ou ajoute le badge, sauf si elle est déjà sur 20.
-   * Les notes /20 sont marquées sans rien changer : elles servent au calcul des moyennes.
+   * Les notes /20 sont marquées sans rien changer : inutile de les analyser à chaque passage.
    */
   function marquer(el, type, note, source) {
     el.setAttribute(ATTR, type);
     el.dataset.sur20Src = source;
-    el.dataset.sur20Valeur = String(note.valeur20);
     el.dataset.sur20Vingt = note.surVingt ? '1' : '0';
     if (note.surVingt) return;
-    el.classList.add('sur20-note');
     const bareme = baremes.get(el);
     if (reglages.mode === 'remplacer') {
-      remplacer(el, note, source);
+      remplacer(el, note, source + (bareme ? bareme.dataset.sur20Texte.trim() : ''));
       // Note coupée : on masque aussi le « /10 » qui est dans un autre nœud.
       if (bareme) bareme.classList.add('sur20-masque');
     } else {
       // Note coupée : le badge va après le « /10 », pas entre le nombre et le barème.
       (bareme || el).append(creerBadge(note.valeur20));
+    }
+  }
+
+  // Remplace un de nos <span> par son texte, en le recollant aux textes voisins
+  // pour retrouver les nœuds d'origine (« Moyenne classe : » + « 6,93 »).
+  function remettreTexte(el, texte) {
+    const estTexte = (n) => n !== null && n.nodeType === Node.TEXT_NODE;
+    const { previousSibling: avant, nextSibling: apres } = el;
+    if (estTexte(avant)) {
+      avant.appendData(texte + (estTexte(apres) ? apres.data : ''));
+      if (estTexte(apres)) apres.remove();
+      el.remove();
+    } else if (estTexte(apres)) {
+      apres.insertData(0, texte);
+      el.remove();
+    } else {
+      el.replaceWith(document.createTextNode(texte));
     }
   }
 
@@ -104,11 +116,11 @@
     if (type === 'coupee') {
       const bareme = baremes.get(el);
       if (bareme) restaurerBareme(bareme);
-      el.replaceWith(document.createTextNode(el.dataset.sur20Src));
+      remettreTexte(el, el.dataset.sur20Src);
       return;
     }
     if (type === 'inline') {
-      el.replaceWith(document.createTextNode(el.dataset.sur20Src));
+      remettreTexte(el, el.dataset.sur20Src);
       return;
     }
     // Si notre valeur est toujours là, on remet le contenu d'origine.
@@ -119,10 +131,8 @@
     el.querySelectorAll(':scope > .sur20-badge').forEach((b) => b.remove());
     el.removeAttribute(ATTR);
     delete el.dataset.sur20Src;
-    delete el.dataset.sur20Valeur;
     delete el.dataset.sur20Vingt;
     delete el.dataset.sur20Affiche;
-    el.classList.remove('sur20-note');
   }
 
   function toutNettoyer() {
@@ -131,7 +141,7 @@
 
   // Remet le texte « /10 » d'une note coupée à la place de notre <span>.
   function restaurerBareme(bareme) {
-    if (bareme.isConnected) bareme.replaceWith(document.createTextNode(bareme.dataset.sur20Texte));
+    if (bareme.isConnected) remettreTexte(bareme, bareme.dataset.sur20Texte);
   }
 
   // L'élément affiche-t-il toujours exactement ce que l'extension y a mis ?
@@ -200,10 +210,7 @@
     for (const occ of occurrences) {
       fragment.append(texte.slice(position, occ.index));
       const enveloppe = document.createElement('span');
-      const orig = document.createElement('span');
-      orig.className = 'sur20-orig';
-      orig.textContent = occ.brut;
-      enveloppe.append(orig);
+      enveloppe.textContent = occ.brut;
       marquer(enveloppe, 'inline', occ.note, occ.brut.trim());
       fragment.append(enveloppe);
       position = occ.index + occ.brut.length;
@@ -328,18 +335,30 @@
     minuterie = null;
     if (!reglages.actif || !document.body) return;
     if (observateur) observateur.disconnect();
+    const debut = performance.now();
     try {
       scanner();
     } catch (e) {
       console.warn('[Pronote sur 20]', e);
     } finally {
-      if (reglages.actif) observer();
+      dernierPassage = performance.now();
+      // Pause proportionnelle au coût du passage : courte sur une page légère,
+      // plus longue sur une grosse page pour ne pas ralentir Pronote.
+      intervalle = Math.min(600, Math.max(60, (dernierPassage - debut) * 10));
+      observer();
+      publier();
     }
   }
 
-  // Au plus un traitement toutes les 250 ms, même si Pronote modifie la page en rafale.
+  /*
+   * Un MutationObserver est appelé avant l'affichage : convertir tout de suite évite
+   * de voir la note d'origine clignoter. En rafale, on attend la fin de la pause.
+   */
   function planifier() {
-    if (minuterie === null) minuterie = setTimeout(executer, 250);
+    if (minuterie !== null) return;
+    const attente = intervalle - (performance.now() - dernierPassage);
+    if (attente <= 0) executer();
+    else minuterie = setTimeout(executer, attente);
   }
 
   // Remet la page à zéro puis réapplique les réglages courants.
@@ -349,7 +368,30 @@
     minuterie = null;
     toutNettoyer();
     if (reglages.actif) executer();
+    else publier();
   }
+
+  /* ------------------------------------------------------------------ */
+  /* État affiché dans le popup                                          */
+  /* ------------------------------------------------------------------ */
+
+  // Le popup ouvre un canal vers chaque cadre de l'onglet : on y publie le nombre
+  // de notes converties, à l'ouverture puis après chaque passage.
+  const canaux = new Set();
+  const idCadre = Math.random().toString(36).slice(2);
+
+  function publier() {
+    if (!canaux.size) return;
+    const converties = document.querySelectorAll(SEL_MARQUE + '[data-sur20-vingt="0"]').length;
+    for (const canal of canaux) canal.postMessage({ cadre: idCadre, converties });
+  }
+
+  chrome.runtime?.onConnect?.addListener((canal) => {
+    if (canal.name !== 'sur20-etat') return;
+    canaux.add(canal);
+    canal.onDisconnect.addListener(() => canaux.delete(canal));
+    publier();
+  });
 
   /* ------------------------------------------------------------------ */
   /* Réglages (chrome.storage)                                           */

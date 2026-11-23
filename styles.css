@@ -1,18 +1,23 @@
 /* Pronote sur 20 — styles injectés dans Pronote. Tout est préfixé « sur20- ». */
 
-/* Badge discret à côté de la note */
+/*
+ * Badge à côté de la note. Couleurs dérivées du texte de Pronote :
+ * il s'accorde à tous ses thèmes, clairs ou sombres.
+ */
 .sur20-badge {
   display: inline-block;
-  margin-left: 4px;
+  margin-left: 5px;
   padding: 0 5px;
-  border-radius: 8px;
-  background: #e6f4ea;
-  color: #137333;
-  font: 600 11px/1.6 system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  white-space: nowrap;
-  vertical-align: middle;
-  text-decoration: none;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  color: inherit;
+  font-family: inherit;
+  font-size: .86em;
   font-style: normal;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 
 /* Mode « remplacer » : la note /20 garde exactement le style de la note Pronote */

@@ -3,7 +3,9 @@
 Extension Chrome / Firefox (Manifest V3) qui convertit les notes Pronote sur 20.
 Par défaut, la note est remplacée directement (`5,25/10` → `10,50`, même style que les autres notes).
 Les moyennes de classe/groupe et les notes la plus haute/basse affichées avec un barème sont aussi converties.
-Le popup permet d'afficher plutôt un badge à côté (`7/10 14/20`). Aucune donnée envoyée, aucune bibliothèque externe.
+Aucune donnée envoyée, aucune bibliothèque externe.
+
+Le popup permet d'afficher plutôt un badge à côté (`7/10 14/20`), de choisir les décimales et de mettre en pause.
 
 ## Arborescence
 
@@ -13,10 +15,11 @@ pronote-sur20/
 ├── core.js              Fonctions pures : détection, conversion, format
 ├── content.js           Script injecté dans Pronote (remplacement/badges, MutationObserver)
 ├── styles.css           Styles injectés dans Pronote
-├── background.js        Enregistre le script sur les adresses d'ENT ajoutées
-├── popup.html/.css/.js Réglages rapides (thème sombre/clair)
-├── options.html / .js   Ajout des adresses d'ENT
-├── icons/               icon16/32/48/128.png + generer-icones.ps1
+├── background.js        Sites ajoutés (ENT) et icône grise en pause
+├── ui.css               Couleurs et contrôles communs (thème sombre/clair)
+├── popup.html/.css/.js  Réglages rapides et état de l'onglet
+├── options.html/.css/.js  Ajout des adresses d'ENT
+├── icons/               icon16/32/48/128.png, versions grises + generer-icones.ps1
 └── tests/
     ├── core.test.js     Tests unitaires (node tests/core.test.js)
     ├── page-test.html   Page imitant Pronote pour tester sans extension
@@ -43,9 +46,10 @@ pronote-sur20/
 Un module temporaire disparaît quand Firefox se ferme. Pour une installation permanente, il faut le signer via addons.mozilla.org (possible en mode « non listé »).
 
 ### Pronote via un ENT ou une autre adresse
-Popup → « Pronote via un ENT ? » → saisir par exemple `https://ent.monlycee.fr` → Enregistrer → accepter
-la permission → recharger l'onglet. Si l'ENT affiche Pronote dans un cadre venant de `index-education.net`,
-cette étape n'est pas nécessaire : le script est déjà injecté dans tous les cadres.
+Ouvrir Pronote, cliquer sur l'icône de l'extension → **Activer** → accepter la permission. La page est convertie
+sans la recharger. On peut aussi saisir l'adresse à la main : popup → **Sites et ENT** → `ent.monlycee.fr` → **Ajouter**.
+Si l'ENT affiche Pronote dans un cadre venant de `index-education.net`, cette étape n'est pas nécessaire :
+le script est déjà injecté dans tous les cadres.
 
 ## Tests
 
@@ -53,20 +57,6 @@ cette étape n'est pas nécessaire : le script est déjà injecté dans tous les
 node tests/core.test.js
 ```
 
-| Entrée | Attendu |
-|---|---|
-| 7/10 | 14/20 |
-| 9/12 | 15/20 |
-| 3,5/5 | 14/20 |
-| 32/40 | 16/20 |
-| 18/20 | inchangé |
-| Moyenne classe : 6,93/10 | Moyenne classe : 13,86 |
-| Abs | ignoré |
-| 9,5/12 | 15,83/20 (15,8 avec 1 décimale) |
-| 06/10/2026, 15/09 | ignorés (dates) |
-
-Tests manuels dans Pronote : changer d'onglet, de période et de matière (les conversions doivent suivre),
-essayer chaque réglage du popup, désactiver l'extension (la page doit revenir à l'identique).
-
 ## Limites connues
 - Une date au format `j/m` sans zéro (ex. `5/10`) serait prise pour une note ; Pronote écrit les dates `05/10`.
+- Un élément qui ne contient que `1/2` (une pagination, par exemple) est pris pour une note.

@@ -80,4 +80,25 @@ test('note dans un texte court', () => {
   assert.equal(r[0].brut, '7/10');
 });
 
+console.log('Numérotations (ne sont pas des notes)');
+for (const t of ['Groupe 1/2', 'Exercice n° 3/4', 'Séance 2/5', 'DM de maths (1/2)', 'p. 4/12']) {
+  test('« ' + t + ' » → rien', () => assert.deepEqual(C.trouverNotes(t), []));
+}
+test('« Groupe 1 » + « /2 » → rien', () => assert.equal(C.analyserNoteCoupee('Groupe 1', '/2'), null));
+test('« Moyenne groupe 3,72/10 » reste une note', () => assert.equal(C.trouverNotes('Moyenne groupe 3,72/10').length, 1));
+test('« Note : 2/3 » reste une note', () => assert.equal(C.trouverNotes('Note : 2/3').length, 1));
+test('« TP 7/10 » reste une note', () => assert.equal(C.trouverNotes('TP 7/10').length, 1));
+
+console.log('Adresses de sites');
+test('adresse complète', () => assert.equal(C.versMotif('https://ent.monlycee.fr/accueil?x=1'), '*://ent.monlycee.fr/*'));
+test('adresse sans https', () => assert.equal(C.versMotif(' ent.monlycee.fr '), '*://ent.monlycee.fr/*'));
+test('adresses refusées', () => {
+  for (const a of ['', 'monlycee', '*.monlycee.fr', 'ftp://monlycee.fr', 'mon lycee.fr']) assert.equal(C.versMotif(a), null, a);
+});
+test('motif → nom du site', () => assert.equal(C.hoteDuMotif('*://ent.monlycee.fr/*'), 'ent.monlycee.fr'));
+test('reconnaît Pronote', () => {
+  assert.equal(C.estPronote('https://0750001a.index-education.net/pronote/eleve.html'), true);
+  assert.equal(C.estPronote('https://exemple.fr/?u=index-education.net/pronote/'), false);
+});
+
 console.log(`\n${ok} test(s) réussi(s)` + (process.exitCode ? ' — des tests ont échoué' : ''));
